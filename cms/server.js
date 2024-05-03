@@ -350,7 +350,7 @@ const _delete$1 = async (req, res) => {
     }
     res.status(200).json({ success: 'Deleted single schema successfully' });
 };
-const privateSinglesSchemaController = { getAll: getAll$1, get: get$5, post: post$2, patch: patch$2, delete: _delete$1 };
+const internalSinglesSchemaController = { getAll: getAll$1, get: get$5, post: post$2, patch: patch$2, delete: _delete$1 };
 
 const getAll = async (_req, res) => {
     let schemas;
@@ -471,19 +471,19 @@ const _delete = async (req, res) => {
     }
     res.status(200).json({ success: 'Deleted collection schema successfully' });
 };
-const privateCollectionsSchemaController = { getAll, get: get$4, post: post$1, patch: patch$1, delete: _delete };
+const internalCollectionsSchemaController = { getAll, get: get$4, post: post$1, patch: patch$1, delete: _delete };
 
-const privateSchemasRouter = Router();
-privateSchemasRouter.get('/singles', privateSinglesSchemaController.getAll);
-privateSchemasRouter.get('/singles/:name', privateSinglesSchemaController.get);
-privateSchemasRouter.post('/singles', privateSinglesSchemaController.post);
-privateSchemasRouter.patch('/singles/:name', privateSinglesSchemaController.patch);
-privateSchemasRouter.delete('/singles/:name', privateSinglesSchemaController.delete);
-privateSchemasRouter.get('/collections', privateCollectionsSchemaController.getAll);
-privateSchemasRouter.get('/collections/:name', privateCollectionsSchemaController.get);
-privateSchemasRouter.post('/collections', privateCollectionsSchemaController.post);
-privateSchemasRouter.patch('/collections/:name', privateCollectionsSchemaController.patch);
-privateSchemasRouter.delete('/collections/:name', privateCollectionsSchemaController.delete);
+const internalSchemasRouter = Router();
+internalSchemasRouter.get('/singles', internalSinglesSchemaController.getAll);
+internalSchemasRouter.get('/singles/:name', internalSinglesSchemaController.get);
+internalSchemasRouter.post('/singles', internalSinglesSchemaController.post);
+internalSchemasRouter.patch('/singles/:name', internalSinglesSchemaController.patch);
+internalSchemasRouter.delete('/singles/:name', internalSinglesSchemaController.delete);
+internalSchemasRouter.get('/collections', internalCollectionsSchemaController.getAll);
+internalSchemasRouter.get('/collections/:name', internalCollectionsSchemaController.get);
+internalSchemasRouter.post('/collections', internalCollectionsSchemaController.post);
+internalSchemasRouter.patch('/collections/:name', internalCollectionsSchemaController.patch);
+internalSchemasRouter.delete('/collections/:name', internalCollectionsSchemaController.delete);
 
 const get$3 = async (req, res) => {
     const { name } = req.params;
@@ -568,7 +568,7 @@ const patch = async (req, res) => {
     }
     res.status(200).json({ success: 'Updated single successfully' });
 };
-const privateSinglesController = { get: get$3, post, patch };
+const internalSinglesController = { get: get$3, post, patch };
 
 const get$2 = async (req, res) => {
     const { name } = req.params;
@@ -726,21 +726,21 @@ const deleteItem = async (req, res) => {
     }
     res.status(200).json({ success: 'Deleted collection item successfully' });
 };
-const privateCollectionsController = { get: get$2, getItem: getItem$1, postItem, patchItem, deleteItem };
+const internalCollectionsController = { get: get$2, getItem: getItem$1, postItem, patchItem, deleteItem };
 
-const privateContentRouter = Router();
-privateContentRouter.get('/singles/:name', privateSinglesController.get);
-privateContentRouter.post('/singles/:name', privateSinglesController.post);
-privateContentRouter.patch('/singles/:name', privateSinglesController.patch);
-privateContentRouter.get('/collections/:name', privateCollectionsController.get);
-privateContentRouter.get('/collections/:name/:id', privateCollectionsController.getItem);
-privateContentRouter.post('/collections/:name', privateCollectionsController.postItem);
-privateContentRouter.patch('/collections/:name/:id', privateCollectionsController.patchItem);
-privateContentRouter.delete('/collections/:name/:id', privateCollectionsController.deleteItem);
+const internalContentRouter = Router();
+internalContentRouter.get('/singles/:name', internalSinglesController.get);
+internalContentRouter.post('/singles/:name', internalSinglesController.post);
+internalContentRouter.patch('/singles/:name', internalSinglesController.patch);
+internalContentRouter.get('/collections/:name', internalCollectionsController.get);
+internalContentRouter.get('/collections/:name/:id', internalCollectionsController.getItem);
+internalContentRouter.post('/collections/:name', internalCollectionsController.postItem);
+internalContentRouter.patch('/collections/:name/:id', internalCollectionsController.patchItem);
+internalContentRouter.delete('/collections/:name/:id', internalCollectionsController.deleteItem);
 
-const privateApiRouter = Router();
-privateApiRouter.use('/schemas', privateSchemasRouter);
-privateApiRouter.use('/content', privateContentRouter);
+const internalApiRouter = Router();
+internalApiRouter.use('/schemas', internalSchemasRouter);
+internalApiRouter.use('/content', internalContentRouter);
 
 const get$1 = async (req, res) => {
     const { name } = req.params;
@@ -830,7 +830,7 @@ publicApiRouter.get(['/collection/:name/:id', '/c/:name/:id'], publicCollections
 
 const router = Router();
 router.use('/api', publicApiRouter);
-router.use('/internal-api', privateApiRouter);
+router.use('/internal-api', internalApiRouter);
 router.use(pagesRouter);
 
 // init directories

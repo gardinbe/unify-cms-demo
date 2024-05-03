@@ -5,9 +5,7 @@ dist
 schemas
 build
 logs
-data
 .next
 
 # files
-.env
 *.tsbuildinfo
