@@ -107,22 +107,22 @@ var config = {
  * @param db - Target database
  */
 const initDatabase = async (db) => {
-    void log('Initializing database'.gray);
+    log('Initializing database'.gray);
     try {
         //creates db if doesn't exist
         await db.sync();
     }
     catch (e) {
-        void logError('Failed to synchronize database'.red);
+        logError('Failed to synchronize database'.red);
         throw e;
     }
-    void log('Checking database connection'.gray);
+    log('Checking database connection'.gray);
     try {
         //test db connection
         await db.authenticate();
     }
     catch (e) {
-        void logError('Failed to connect to database'.red);
+        logError('Failed to connect to database'.red);
         throw e;
     }
 };
@@ -145,32 +145,24 @@ const initSchemaDirs = async () => {
  * @param message - Target message
  * @param file - Target file name **without extension**: `logs/[filename].log`
  */
-const log = async (message, options = { file: 'server', toConsole: true }) => {
+const log = (message, options = { file: 'server', toConsole: true }) => {
     if (options.toConsole)
         console.log(message);
     const filePath = resolve(config.LOGS_PATH, options.file + '.log');
     const timestamp = new Date().toISOString();
-    await fsp.appendFile(filePath, `[${timestamp}] ${message}\n`);
+    void fsp.appendFile(filePath, `[${timestamp}] ${message}\n`);
 };
 /**
  * Logs an error to the console and to a file.
  * @param error - Target error
  * @param file - Target file name **without extension**: `logs/[filename].log`
  */
-const logError = async (error, options = { file: 'server', toConsole: true }) => {
+const logError = (error, options = { file: 'server', toConsole: true }) => {
     if (options.toConsole)
         console.error(error);
     const filePath = resolve(config.LOGS_PATH, options.file + '.log');
     const timestamp = new Date().toISOString();
-    await fsp.appendFile(filePath, `[${timestamp}] [ERROR] ${error}\n`);
-};
-/**
- * Logs a message to the console and to a file **synchronously**.
- * @param message - Target message
- * @param file - Target file name **without extension**: `logs/[filename].log`
- */
-const logSync = (...args) => {
-    void log(...args);
+    void fsp.appendFile(filePath, `[${timestamp}] [ERROR] ${error}\n`);
 };
 /**
  * Creates the `logs` directory if it doesn't already exist.
@@ -185,7 +177,7 @@ const data = new Sequelize({
     storage: config.DATABASE_PATH
         ?? ':memory:',
     logging: config.IS_PROD
-        ? message => logSync(message, { file: 'database', toConsole: false })
+        ? message => log(message, { file: 'database', toConsole: false })
         : false
 });
 
@@ -287,7 +279,7 @@ const post$2 = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
+        logError(e);
         return;
     }
     res.status(200).json({
@@ -324,7 +316,7 @@ const patch$2 = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
+        logError(e);
         return;
     }
     res.status(200).json({ success: 'Updated single schema successfully' });
@@ -345,7 +337,7 @@ const _delete$1 = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
+        logError(e);
         return;
     }
     res.status(200).json({ success: 'Deleted single schema successfully' });
@@ -406,7 +398,7 @@ const post$1 = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
+        logError(e);
         return;
     }
     res.status(200).json({
@@ -445,7 +437,7 @@ const patch$1 = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
+        logError(e);
         return;
     }
     res.status(200).json({ success: 'Updated collection schema successfully' });
@@ -466,7 +458,7 @@ const _delete = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
+        logError(e);
         return;
     }
     res.status(200).json({ success: 'Deleted collection schema successfully' });
@@ -506,7 +498,7 @@ const get$3 = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
+        logError(e);
         return;
     }
     res.status(200).json(item);
@@ -533,7 +525,7 @@ const post = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
+        logError(e);
         return;
     }
     res.status(200).json({ success: 'Created single successfully' });
@@ -563,7 +555,7 @@ const patch = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
+        logError(e);
         return;
     }
     res.status(200).json({ success: 'Updated single successfully' });
@@ -587,7 +579,7 @@ const get$2 = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
+        logError(e);
         return;
     }
     res.status(200).json(items);
@@ -622,7 +614,7 @@ const getItem$1 = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
+        logError(e);
         return;
     }
     res.status(200).json(item);
@@ -650,7 +642,7 @@ const postItem = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
+        logError(e);
         return;
     }
     res.status(200).json({
@@ -692,7 +684,7 @@ const patchItem = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
+        logError(e);
         return;
     }
     res.status(200).json({ success: 'Updated collection item successfully' });
@@ -721,7 +713,7 @@ const deleteItem = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
+        logError(e);
         return;
     }
     res.status(200).json({ success: 'Deleted collection item successfully' });
@@ -759,7 +751,7 @@ const get$1 = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
+        logError(e);
         return;
     }
     res.status(200).json(itemProperties);
@@ -782,7 +774,7 @@ const get = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
+        logError(e);
         return;
     }
     res.status(200).json(itemsProperties);
@@ -816,7 +808,7 @@ const getItem = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
+        logError(e);
         return;
     }
     res.status(200).json(itemProperties);
@@ -835,13 +827,13 @@ router.use(pagesRouter);
 
 // init directories
 await initLogsDir();
-void log('Starting Unify CMS'.blue + '\n');
-void log('Checking schema directories'.gray);
+log('Starting Unify CMS'.blue + '\n');
+log('Checking schema directories'.gray);
 await initSchemaDirs();
 // init database
 await initDatabase(data);
 //create app, init middlewares
-void log('Creating application'.gray);
+log('Creating application'.gray);
 const app = express();
 app.use(cors());
 app.use(json());
@@ -851,8 +843,8 @@ app.use(_static(config.UI_ASSETS_PATH, { index: false }));
 app.use(cookieParser(config.COOKIE_SECRET ?? undefined));
 app.use(router);
 // create http server
-void log('Creating server'.gray);
+log('Creating server'.gray);
 const server = createServer(app);
 server.listen(config.PORT, () => {
-    void log('\n' + 'Unify CMS running: '.green + `http://localhost:${config.PORT}`.yellow.underline + '\n');
+    log('\n' + 'Unify CMS running: '.green + `http://localhost:${config.PORT}`.yellow.underline + '\n');
 });
