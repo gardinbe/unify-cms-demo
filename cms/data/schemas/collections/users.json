@@ -1,0 +1,38 @@
+{
+  "name": "users",
+  "singular_display_name": "user",
+  "plural_display_name": "users",
+  "item_display_property": "username",
+  "properties": {
+    "username": {
+      "display_name": "Username",
+      "description": "Username.",
+      "type": "small-text"
+    },
+    "name": {
+      "display_name": "Name",
+      "description": "Full name.",
+      "type": "small-text"
+    },
+    "age": {
+      "display_name": "Age",
+      "description": "Age.",
+      "type": "number"
+    },
+    "bio": {
+      "display_name": "Bio",
+      "description": "Biography.",
+      "type": "large-text"
+    },
+    "picture_url": {
+      "display_name": "Profile Picture URL",
+      "description": "URL of the user's profile picture.",
+      "type": "small-text"
+    },
+    "is_cool": {
+      "display_name": "Is cool?",
+      "description": "Whether or not the user is cool.",
+      "type": "boolean"
+    }
+  }
+}

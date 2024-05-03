@@ -1,0 +1,31 @@
+{
+  "name": "users-page",
+  "display_name": "users page",
+  "properties": {
+    "meta_title": {
+      "display_name": "Meta Title",
+      "description": "Meta title of the page.",
+      "type": "small-text"
+    },
+    "meta_description": {
+      "display_name": "Meta Description",
+      "description": "Meta description of the page.",
+      "type": "small-text"
+    },
+    "heading": {
+      "display_name": "Heading",
+      "description": "Heading.",
+      "type": "small-text"
+    },
+    "subheading": {
+      "display_name": "Subheading",
+      "description": "Subheading.",
+      "type": "small-text"
+    },
+    "main_content": {
+      "display_name": "Main Content",
+      "description": "Main body of content.",
+      "type": "large-text"
+    }
+  }
+}
