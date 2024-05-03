@@ -283,7 +283,7 @@ const post$2 = async (req, res) => {
             res.status(400).json({ error: 'A single schema already exists with this name' });
             return;
         }
-        await fsp.writeFile(resolve(config.SCHEMAS_PATH, `singles/${schema.name}.json`), JSON.stringify(schema), 'utf-8');
+        await fsp.writeFile(resolve(config.SCHEMAS_PATH, `singles/${schema.name}.json`), JSON.stringify(schema, undefined, '  '), 'utf-8');
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
@@ -320,7 +320,7 @@ const patch$2 = async (req, res) => {
             res.status(400).json({ error: 'No single schema exists with this name' });
             return;
         }
-        await fsp.writeFile(resolve(config.SCHEMAS_PATH, `singles/${name}.json`), JSON.stringify(schema), 'utf-8');
+        await fsp.writeFile(resolve(config.SCHEMAS_PATH, `singles/${name}.json`), JSON.stringify(schema, undefined, '  '), 'utf-8');
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
@@ -402,7 +402,7 @@ const post$1 = async (req, res) => {
             res.status(400).json({ error: 'A collection schema already exists with this name' });
             return;
         }
-        await fsp.writeFile(resolve(config.SCHEMAS_PATH, `collections/${schema.name}.json`), JSON.stringify(schema), 'utf-8');
+        await fsp.writeFile(resolve(config.SCHEMAS_PATH, `collections/${schema.name}.json`), JSON.stringify(schema, undefined, '  '), 'utf-8');
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
@@ -441,7 +441,7 @@ const patch$1 = async (req, res) => {
             res.status(400).json({ error: 'No collection schema exists with this name' });
             return;
         }
-        await fsp.writeFile(resolve(config.SCHEMAS_PATH, `collections/${name}.json`), JSON.stringify(schema), 'utf-8');
+        await fsp.writeFile(resolve(config.SCHEMAS_PATH, `collections/${name}.json`), JSON.stringify(schema, undefined, '  '), 'utf-8');
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });

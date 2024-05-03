@@ -7,8 +7,8 @@ This application is a demonstration of how the Unify CMS API's can be interacted
 1. Ensure you're got and are using atleast Node 20.11. If you haven't:
 	1. Install (NVM)[https://github.com/coreybutler/nvm-windows]
 	2. Open a new terminal/powershell
-	3. Run `nvm install 20.11.1`
-	4. Run `nvm use 20.11.1`
+	3. Run `nvm install 20.11`
+	4. Run `nvm use 20.11`
 2. Install yarn: `npm i -g yarn`
 3. Navigate to the root of the project
 4. Install all dependencies: `yarn install`
