@@ -1,0 +1,11 @@
+@import "~scss/logic";
+
+.spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: load 0.75s linear infinite;
+    // flex-grow: 1;
+    position: absolute;
+    inset: 0;
+}

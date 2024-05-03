@@ -1,0 +1,15 @@
+@import "~scss/logic";
+
+.picture {
+	height: unset;
+	aspect-ratio: 1/1;
+}
+
+.name {
+	font-weight: 500;
+}
+
+.isCool {
+	color: #277dc3;
+	margin-top: 1.3rem;
+}

@@ -1,0 +1,63 @@
+@import "~scss/logic";
+
+.users {
+	//unset `ul` styles
+	margin: unset;
+	padding: unset;
+	list-style-type: unset;
+
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+
+	gap: 30px;
+
+	@include media-breakpoint-down(xl) {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	@include media-breakpoint-down(lg) {
+		grid-template-columns: repeat(1, 1fr);
+	}
+}
+
+.user {
+	display: flex;
+	flex-direction: column;
+
+	text-decoration: unset;
+
+	@include hover-active-swap-focus-visible {
+		text-decoration: unset;
+	}
+
+	color: inherit;
+
+	padding: 20px;
+	border: 1px dotted #222;
+
+	background-color: #eee;
+	transition: background-color var(--transition);
+
+	@include hover-active-swap-focus-visible {
+		background-color: #ddd;
+	}
+}
+
+.username {
+	font-size: 1.7rem;
+}
+
+.picture {
+	aspect-ratio: 1/1;
+	width: unset;
+	height: unset;
+}
+
+.bio {
+	margin-top: 1.3rem;
+}
+
+.isCool {
+	color: #277dc3;
+	margin-top: 1.3rem;
+}
