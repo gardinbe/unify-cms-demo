@@ -112,10 +112,11 @@ const defaultLogOptions = {
  * @param message - Message
  * @param options - Options
  */
-const log = async (message, options = defaultLogOptions) => {
-    if (options.toConsole)
+const log = async (message, options) => {
+    const _options = { ...defaultLogOptions, ...options };
+    if (_options.toConsole)
         console.log(message);
-    const filePath = resolve(config.LOGS_PATH, options.file + '.log');
+    const filePath = resolve(config.LOGS_PATH, _options.file + '.log');
     const timestamp = new Date().toISOString();
     await fsp.appendFile(filePath, `[${timestamp}] ${message.strip}\n`);
 };
@@ -124,13 +125,14 @@ const log = async (message, options = defaultLogOptions) => {
  * @param error - Error
  * @param options - Options
  */
-const logError = async (error, options = defaultLogOptions) => {
-    if (options.toConsole)
+const logError = async (error, options) => {
+    const _options = { ...defaultLogOptions, ...options };
+    if (_options.toConsole)
         console.error(error);
     const formattedError = typeof error === 'string'
         ? error.strip
         : error;
-    const filePath = resolve(config.LOGS_PATH, options.file + '.log');
+    const filePath = resolve(config.LOGS_PATH, _options.file + '.log');
     const timestamp = new Date().toISOString();
     await fsp.appendFile(filePath, `[${timestamp}] [ERROR] ${formattedError}\n`);
 };
