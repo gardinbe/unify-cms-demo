@@ -4,19 +4,20 @@ import cookieParser from 'cookie-parser';
 import express, { Router, json, urlencoded, static as _static } from 'express';
 import cors from 'cors';
 import { resolve } from 'path';
+import { env } from 'process';
 import { configDotenv } from 'dotenv';
 import { Sequelize, DataTypes, Model } from 'sequelize';
-import 'colors';
 import fs from 'fs';
 import fsp from 'fs/promises';
+import 'colors';
 
 /**
  * Object with methods to parse environment variables.
  */
-const env = {
+const parseEnv = {
     /**
      * Parses an environment variable value as a boolean.
-     * @param value - Target environment variable value
+     * @param value - Environment variable value
      * @returns Boolean
      */
     bool(value) {
@@ -28,7 +29,7 @@ const env = {
     },
     /**
      * Parses an environment variable value as a float.
-     * @param value - Target environment variable value
+     * @param value - Environment variable value
      * @returns Integer
      */
     int(value) {
@@ -41,7 +42,7 @@ const env = {
     },
     /**
      * Parses an environment variable value as a float.
-     * @param value - Target environment variable value
+     * @param value - Environment variable value
      * @returns Float
      */
     float(value) {
@@ -55,29 +56,29 @@ const env = {
 };
 
 configDotenv({ path: resolve(import.meta.dirname, '../.env') });
-const IS_PROD = process.env.NODE_ENV === 'production';
-const IS_EXTERNAL_BUILD = env.bool(process.env.IS_EXTERNAL_BUILD)
+const IS_PROD = env.NODE_ENV === 'production';
+const IS_EXTERNAL_BUILD = parseEnv.bool(env.IS_EXTERNAL_BUILD)
     ?? false;
-const PORT = env.int(process.env.PORT)
+const PORT = parseEnv.int(env.PORT)
     ?? 1234;
-const COOKIE_SECRET = process.env.COOKIE_SECRET
+const COOKIE_SECRET = env.COOKIE_SECRET
     || 'secret';
 const ROOT_PATH = resolve(import.meta.dirname);
-const LOGS_PATH = process.env.LOGS_PATH
-    ? resolve(process.env.LOGS_PATH)
+const LOGS_PATH = env.LOGS_PATH
+    ? resolve(env.LOGS_PATH)
     : IS_EXTERNAL_BUILD
         ? resolve(ROOT_PATH, 'logs')
         : resolve(ROOT_PATH, '../logs');
 const UI_ASSETS_PATH = IS_EXTERNAL_BUILD
     ? resolve(ROOT_PATH, 'ui')
     : resolve(ROOT_PATH, '../../ui/dist');
-const SCHEMAS_PATH = process.env.SCHEMAS_PATH
-    ? resolve(process.env.SCHEMAS_PATH)
+const SCHEMAS_PATH = env.SCHEMAS_PATH
+    ? resolve(env.SCHEMAS_PATH)
     : IS_EXTERNAL_BUILD
         ? resolve(ROOT_PATH, 'data/schemas')
         : resolve(ROOT_PATH, '../.tmp/schemas');
-const DATABASE_PATH = process.env.DATABASE_PATH
-    ? resolve(process.env.DATABASE_PATH)
+const DATABASE_PATH = env.DATABASE_PATH
+    ? resolve(env.DATABASE_PATH)
     : IS_EXTERNAL_BUILD
         ? resolve(ROOT_PATH, 'data/data.db')
         : resolve(ROOT_PATH, '../.tmp/data.db');
@@ -102,27 +103,66 @@ var config = {
     DATABASE_PATH
 };
 
+const defaultLogOptions = {
+    file: 'server',
+    toConsole: true
+};
+/**
+ * Logs a message to the console and to a file.
+ * @param message - Message
+ * @param options - Options
+ */
+const log = async (message, options = defaultLogOptions) => {
+    if (options.toConsole)
+        console.log(message);
+    const filePath = resolve(config.LOGS_PATH, options.file + '.log');
+    const timestamp = new Date().toISOString();
+    await fsp.appendFile(filePath, `[${timestamp}] ${message.strip}\n`);
+};
+/**
+ * Logs an error to the console and to a file.
+ * @param error - Error
+ * @param options - Options
+ */
+const logError = async (error, options = defaultLogOptions) => {
+    if (options.toConsole)
+        console.error(error);
+    const formattedError = typeof error === 'string'
+        ? error.strip
+        : error;
+    const filePath = resolve(config.LOGS_PATH, options.file + '.log');
+    const timestamp = new Date().toISOString();
+    await fsp.appendFile(filePath, `[${timestamp}] [ERROR] ${formattedError}\n`);
+};
+/**
+ * Creates the `logs` directory if it doesn't already exist.
+ */
+const initLogsDir = async () => {
+    if (!fs.existsSync(config.LOGS_PATH))
+        await fsp.mkdir(config.LOGS_PATH, { recursive: true });
+};
+
 /**
  * Synchronizes and tests the connection of a database.
- * @param db - Target database
+ * @param db - Database
  */
 const initDatabase = async (db) => {
-    log('Initializing database'.gray);
+    void log('Initializing database'.gray);
     try {
         //creates db if doesn't exist
         await db.sync();
     }
     catch (e) {
-        logError('Failed to synchronize database'.red);
+        void logError('Failed to synchronize database');
         throw e;
     }
-    log('Checking database connection'.gray);
+    void log('Checking database connection'.gray);
     try {
         //test db connection
         await db.authenticate();
     }
     catch (e) {
-        logError('Failed to connect to database'.red);
+        void logError('Failed to connect to database');
         throw e;
     }
 };
@@ -140,44 +180,12 @@ const initSchemaDirs = async () => {
         await fsp.mkdir(resolve(config.SCHEMAS_PATH, 'collections'));
 };
 
-/**
- * Logs a message to the console and to a file.
- * @param message - Target message
- * @param file - Target file name **without extension**: `logs/[filename].log`
- */
-const log = (message, options = { file: 'server', toConsole: true }) => {
-    if (options.toConsole)
-        console.log(message);
-    const filePath = resolve(config.LOGS_PATH, options.file + '.log');
-    const timestamp = new Date().toISOString();
-    void fsp.appendFile(filePath, `[${timestamp}] ${message}\n`);
-};
-/**
- * Logs an error to the console and to a file.
- * @param error - Target error
- * @param file - Target file name **without extension**: `logs/[filename].log`
- */
-const logError = (error, options = { file: 'server', toConsole: true }) => {
-    if (options.toConsole)
-        console.error(error);
-    const filePath = resolve(config.LOGS_PATH, options.file + '.log');
-    const timestamp = new Date().toISOString();
-    void fsp.appendFile(filePath, `[${timestamp}] [ERROR] ${error}\n`);
-};
-/**
- * Creates the `logs` directory if it doesn't already exist.
- */
-const initLogsDir = async () => {
-    if (!fs.existsSync(config.LOGS_PATH))
-        await fsp.mkdir(config.LOGS_PATH, { recursive: true });
-};
-
 const data = new Sequelize({
     dialect: 'sqlite',
     storage: config.DATABASE_PATH
         ?? ':memory:',
     logging: config.IS_PROD
-        ? message => log(message, { file: 'database', toConsole: false })
+        ? message => void log(message, { file: 'database', toConsole: false })
         : false
 });
 
@@ -279,7 +287,7 @@ const post$2 = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        logError(e);
+        void logError(e);
         return;
     }
     res.status(200).json({
@@ -316,7 +324,7 @@ const patch$2 = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        logError(e);
+        void logError(e);
         return;
     }
     res.status(200).json({ success: 'Updated single schema successfully' });
@@ -337,7 +345,7 @@ const _delete$1 = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        logError(e);
+        void logError(e);
         return;
     }
     res.status(200).json({ success: 'Deleted single schema successfully' });
@@ -398,7 +406,7 @@ const post$1 = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        logError(e);
+        void logError(e);
         return;
     }
     res.status(200).json({
@@ -437,7 +445,7 @@ const patch$1 = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        logError(e);
+        void logError(e);
         return;
     }
     res.status(200).json({ success: 'Updated collection schema successfully' });
@@ -458,7 +466,7 @@ const _delete = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        logError(e);
+        void logError(e);
         return;
     }
     res.status(200).json({ success: 'Deleted collection schema successfully' });
@@ -498,7 +506,7 @@ const get$3 = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        logError(e);
+        void logError(e);
         return;
     }
     res.status(200).json(item);
@@ -525,7 +533,7 @@ const post = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        logError(e);
+        void logError(e);
         return;
     }
     res.status(200).json({ success: 'Created single successfully' });
@@ -555,7 +563,7 @@ const patch = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        logError(e);
+        void logError(e);
         return;
     }
     res.status(200).json({ success: 'Updated single successfully' });
@@ -579,7 +587,7 @@ const get$2 = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        logError(e);
+        void logError(e);
         return;
     }
     res.status(200).json(items);
@@ -614,7 +622,7 @@ const getItem$1 = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        logError(e);
+        void logError(e);
         return;
     }
     res.status(200).json(item);
@@ -642,7 +650,7 @@ const postItem = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        logError(e);
+        void logError(e);
         return;
     }
     res.status(200).json({
@@ -684,7 +692,7 @@ const patchItem = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        logError(e);
+        void logError(e);
         return;
     }
     res.status(200).json({ success: 'Updated collection item successfully' });
@@ -713,7 +721,7 @@ const deleteItem = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        logError(e);
+        void logError(e);
         return;
     }
     res.status(200).json({ success: 'Deleted collection item successfully' });
@@ -751,7 +759,7 @@ const get$1 = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        logError(e);
+        void logError(e);
         return;
     }
     res.status(200).json(itemProperties);
@@ -774,7 +782,7 @@ const get = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        logError(e);
+        void logError(e);
         return;
     }
     res.status(200).json(itemsProperties);
@@ -808,7 +816,7 @@ const getItem = async (req, res) => {
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
-        logError(e);
+        void logError(e);
         return;
     }
     res.status(200).json(itemProperties);
@@ -827,13 +835,13 @@ router.use(pagesRouter);
 
 // init directories
 await initLogsDir();
-log('Starting Unify CMS'.blue + '\n');
-log('Checking schema directories'.gray);
+void log('Starting Unify CMS'.blue + '\n');
+void log('Checking schema directories'.gray);
 await initSchemaDirs();
 // init database
 await initDatabase(data);
 //create app, init middlewares
-log('Creating application'.gray);
+void log('Creating application'.gray);
 const app = express();
 app.use(cors());
 app.use(json());
@@ -843,8 +851,8 @@ app.use(_static(config.UI_ASSETS_PATH, { index: false }));
 app.use(cookieParser(config.COOKIE_SECRET ?? undefined));
 app.use(router);
 // create http server
-log('Creating server'.gray);
+void log('Creating server'.gray + '\n');
 const server = createServer(app);
 server.listen(config.PORT, () => {
-    log('\n' + 'Unify CMS running: '.green + `http://localhost:${config.PORT}`.yellow.underline + '\n');
+    void log('Unify CMS running: '.blue + `http://localhost:${config.PORT}`.yellow.underline);
 });
