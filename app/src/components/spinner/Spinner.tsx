@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import type { FC } from 'react';
+
 import styles from './Spinner.module.scss';
 
 /**

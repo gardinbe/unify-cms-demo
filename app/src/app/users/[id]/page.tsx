@@ -1,11 +1,13 @@
 import type { Metadata, NextPage } from 'next';
 import Image from 'next/image';
-import styles from './User.module.scss';
+
 import { unify } from '~/lib/server/services';
-import { md, createClass } from '~/lib/utils';
+import { createClass, md } from '~/lib/utils';
+
+import styles from './User.module.scss';
 
 interface Props {
-	params: { id: string; };
+	params: { id: string };
 }
 
 export const generateMetadata = async (props: Props): Promise<Metadata> => {
@@ -17,7 +19,7 @@ export const generateMetadata = async (props: Props): Promise<Metadata> => {
 	};
 };
 
-const UserPage: NextPage<Props> = async props => {
+const UserPage: NextPage<Props> = async (props) => {
 	const { id } = props.params;
 	const user = await unify.getUser(id);
 
@@ -50,23 +52,24 @@ const UserPage: NextPage<Props> = async props => {
 					/>
 
 					<p className={styles.isCool}>
-						{user.is_cool
-							? (
-								<>
-									User is cool!
-								</>
-							)
-							: (
-								<>
-									User is
-									{' '}
-									<b>
-										not
-									</b>
-									{' '}
-									cool!
-								</>
-							)
+						{
+							user.is_cool
+								? (
+									<>
+										User is cool!
+									</>
+								)
+								: (
+									<>
+										User is
+										{' '}
+										<b>
+											not
+										</b>
+										{' '}
+										cool!
+									</>
+								)
 						}
 					</p>
 				</div>

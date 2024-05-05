@@ -1,10 +1,11 @@
 'use client';
 
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import type { CSSProperties, FC } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { IoMdMore } from 'react-icons/io';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+
 import styles from './Nav.module.scss';
 
 /**
@@ -34,9 +35,9 @@ export const Nav: FC = () => {
 			: openMenu();
 	};
 
-	useEffect(closeMenu, [pathname]); //close when navigating using the forward/back buttons
+	useEffect(closeMenu, [pathname]); // close when navigating using the forward/back buttons
 
-	useEffect(() => closeMenu, []); //close when component is destroyed
+	useEffect(() => closeMenu, []); // close when component is destroyed
 
 	return (
 		<nav

@@ -1,15 +1,15 @@
-import { createServer } from 'http';
+import 'colors';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
-import express, { Router, json, urlencoded, static as _static } from 'express';
 import cors from 'cors';
+import express, { Router, json, urlencoded, static as _static } from 'express';
+import { createServer } from 'http';
+import { configDotenv } from 'dotenv';
 import { resolve } from 'path';
 import { env } from 'process';
-import { configDotenv } from 'dotenv';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 import fs from 'fs';
 import fsp from 'fs/promises';
-import 'colors';
 
 /**
  * Object with methods to parse environment variables.
@@ -36,7 +36,7 @@ const parseEnv = {
         if (!value)
             return null;
         const parsedValue = parseInt(value);
-        if (!Number.isInteger(parsedValue)) //includes NaN check
+        if (!Number.isInteger(parsedValue)) // includes NaN check
             return null;
         return parsedValue;
     },
@@ -151,7 +151,7 @@ const initLogsDir = async () => {
 const initDatabase = async (db) => {
     void log('Initializing database'.gray);
     try {
-        //creates db if doesn't exist
+        // creates db if doesn't exist
         await db.sync();
     }
     catch (e) {
@@ -160,7 +160,7 @@ const initDatabase = async (db) => {
     }
     void log('Checking database connection'.gray);
     try {
-        //test db connection
+        // test db connection
         await db.authenticate();
     }
     catch (e) {
@@ -184,20 +184,11 @@ const initSchemaDirs = async () => {
 
 const data = new Sequelize({
     dialect: 'sqlite',
-    storage: config.DATABASE_PATH
-        ?? ':memory:',
+    storage: config.DATABASE_PATH,
     logging: config.IS_PROD
-        ? message => void log(message, { file: 'database', toConsole: false })
+        ? (message) => void log(message, { file: 'database', toConsole: false })
         : false
 });
-
-const get$6 = (_req, res) => {
-    res.sendFile(resolve(config.UI_ASSETS_PATH, 'index.html'));
-};
-const vueAppController = { get: get$6 };
-
-const pagesRouter = Router();
-pagesRouter.get('*', vueAppController.get);
 
 class Collection extends Model {
 }
@@ -237,342 +228,7 @@ Single.init({
     tableName: 'singles'
 });
 
-const getAll$1 = async (_req, res) => {
-    let schemas;
-    try {
-        const fileNames = await fsp.readdir(resolve(config.SCHEMAS_PATH, 'singles'));
-        schemas = await Promise.all(fileNames.map(async (fileName) => JSON.parse(await fsp.readFile(resolve(config.SCHEMAS_PATH, `singles/${fileName}`), 'utf-8'))));
-    }
-    catch (e) {
-        res.status(404).json({ error: 'No single schema exists with this name' });
-        return;
-    }
-    res.status(200).json(schemas);
-};
-const get$5 = async (req, res) => {
-    const { name } = req.params;
-    if (typeof name !== 'string') {
-        res.status(400).json({ error: 'Missing single schema name' });
-        return;
-    }
-    let schema;
-    try {
-        schema = JSON.parse(await fsp.readFile(resolve(config.SCHEMAS_PATH, `singles/${name}.json`), 'utf-8'));
-    }
-    catch (e) {
-        res.status(404).json({ error: 'No single schema exists with this name' });
-        return;
-    }
-    res.status(200).json(schema);
-};
-const post$2 = async (req, res) => {
-    //TODO: ensure content-type is json, and correct structure
-    const schema = req.body;
-    if (!('name' in schema) ||
-        typeof schema.name !== 'string' ||
-        schema.name === 'create' ||
-        !('display_name' in schema) ||
-        typeof schema.display_name !== 'string' ||
-        !('properties' in schema) ||
-        typeof schema.properties !== 'object' ||
-        schema.properties === null ||
-        Array.isArray(schema.properties)) {
-        res.status(400).json({ error: 'Invalid single schema structure' });
-        return;
-    }
-    try {
-        if (fs.existsSync(resolve(config.SCHEMAS_PATH, `singles/${schema.name}.json`))) {
-            res.status(400).json({ error: 'A single schema already exists with this name' });
-            return;
-        }
-        await fsp.writeFile(resolve(config.SCHEMAS_PATH, `singles/${schema.name}.json`), JSON.stringify(schema, undefined, '  '), 'utf-8');
-    }
-    catch (e) {
-        res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
-        return;
-    }
-    res.status(200).json({
-        success: 'Created single schema successfully',
-        created_schema_name: schema.name
-    });
-};
-const patch$2 = async (req, res) => {
-    const { name } = req.params;
-    if (typeof name !== 'string') {
-        res.status(400).json({ error: 'Missing or invalid single schema name' });
-        return;
-    }
-    //TODO: ensure content-type is json, and correct structure
-    const schema = req.body;
-    if (!('name' in schema) ||
-        typeof schema.name !== 'string' ||
-        schema.name === 'create' ||
-        !('display_name' in schema) ||
-        typeof schema.display_name !== 'string' ||
-        !('properties' in schema) ||
-        typeof schema.properties !== 'object' ||
-        schema.properties === null ||
-        Array.isArray(schema.properties)) {
-        res.status(400).json({ error: 'Invalid single schema structure' });
-        return;
-    }
-    try {
-        if (!fs.existsSync(resolve(config.SCHEMAS_PATH, `singles/${name}.json`))) {
-            res.status(400).json({ error: 'No single schema exists with this name' });
-            return;
-        }
-        await fsp.writeFile(resolve(config.SCHEMAS_PATH, `singles/${name}.json`), JSON.stringify(schema, undefined, '  '), 'utf-8');
-    }
-    catch (e) {
-        res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
-        return;
-    }
-    res.status(200).json({ success: 'Updated single schema successfully' });
-};
-const _delete$1 = async (req, res) => {
-    const { name } = req.params;
-    if (typeof name !== 'string') {
-        res.status(400).json({ error: 'Missing or invalid single schema name' });
-        return;
-    }
-    try {
-        if (!fs.existsSync(resolve(config.SCHEMAS_PATH, `singles/${name}.json`))) {
-            res.status(400).json({ error: 'No single schema exists with this name' });
-            return;
-        }
-        await fsp.unlink(resolve(config.SCHEMAS_PATH, `singles/${name}.json`));
-        await Single.destroy({ where: { schema: name } });
-    }
-    catch (e) {
-        res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
-        return;
-    }
-    res.status(200).json({ success: 'Deleted single schema successfully' });
-};
-const internalSinglesSchemaController = { getAll: getAll$1, get: get$5, post: post$2, patch: patch$2, delete: _delete$1 };
-
-const getAll = async (_req, res) => {
-    let schemas;
-    try {
-        const fileNames = await fsp.readdir(resolve(config.SCHEMAS_PATH, 'collections'));
-        schemas = await Promise.all(fileNames.map(async (fileName) => JSON.parse(await fsp.readFile(resolve(config.SCHEMAS_PATH, `collections/${fileName}`), 'utf-8'))));
-    }
-    catch (e) {
-        res.status(404).json({ error: 'No collection schema exists with this name' });
-        return;
-    }
-    res.status(200).json(schemas);
-};
-const get$4 = async (req, res) => {
-    const { name } = req.params;
-    if (typeof name !== 'string') {
-        res.status(400).json({ error: 'Missing collection schema name' });
-        return;
-    }
-    let schema;
-    try {
-        schema = JSON.parse(await fsp.readFile(resolve(config.SCHEMAS_PATH, `collections/${name}.json`), 'utf-8'));
-    }
-    catch (e) {
-        res.status(404).json({ error: 'No collection schema exists with this name' });
-        return;
-    }
-    res.status(200).json(schema);
-};
-const post$1 = async (req, res) => {
-    //TODO: ensure content-type is json, and correct structure
-    const schema = req.body;
-    if (!('name' in schema) ||
-        typeof schema.name !== 'string' ||
-        schema.name === 'create' ||
-        !('plural_display_name' in schema) ||
-        typeof schema.plural_display_name !== 'string' ||
-        !('singular_display_name' in schema) ||
-        typeof schema.singular_display_name !== 'string' ||
-        !('properties' in schema) ||
-        typeof schema.properties !== 'object' ||
-        schema.properties === null ||
-        Array.isArray(schema.properties)) {
-        res.status(400).json({ error: 'Invalid collection schema structure' });
-        return;
-    }
-    try {
-        if (fs.existsSync(resolve(config.SCHEMAS_PATH, `collections/${schema.name}.json`))) {
-            res.status(400).json({ error: 'A collection schema already exists with this name' });
-            return;
-        }
-        await fsp.writeFile(resolve(config.SCHEMAS_PATH, `collections/${schema.name}.json`), JSON.stringify(schema, undefined, '  '), 'utf-8');
-    }
-    catch (e) {
-        res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
-        return;
-    }
-    res.status(200).json({
-        success: 'Created collection schema successfully',
-        created_schema_name: schema.name
-    });
-};
-const patch$1 = async (req, res) => {
-    const { name } = req.params;
-    if (typeof name !== 'string') {
-        res.status(400).json({ error: 'Missing or invalid collection schema name' });
-        return;
-    }
-    //TODO: ensure content-type is json, and correct structure
-    const schema = req.body;
-    if (!('name' in schema) ||
-        typeof schema.name !== 'string' ||
-        schema.name === 'create' ||
-        !('plural_display_name' in schema) ||
-        typeof schema.plural_display_name !== 'string' ||
-        !('singular_display_name' in schema) ||
-        typeof schema.singular_display_name !== 'string' ||
-        !('properties' in schema) ||
-        typeof schema.properties !== 'object' ||
-        schema.properties === null ||
-        Array.isArray(schema.properties)) {
-        res.status(400).json({ error: 'Invalid collection schema structure' });
-        return;
-    }
-    try {
-        if (!fs.existsSync(resolve(config.SCHEMAS_PATH, `collections/${name}.json`))) {
-            res.status(400).json({ error: 'No collection schema exists with this name' });
-            return;
-        }
-        await fsp.writeFile(resolve(config.SCHEMAS_PATH, `collections/${name}.json`), JSON.stringify(schema, undefined, '  '), 'utf-8');
-    }
-    catch (e) {
-        res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
-        return;
-    }
-    res.status(200).json({ success: 'Updated collection schema successfully' });
-};
-const _delete = async (req, res) => {
-    const { name } = req.params;
-    if (typeof name !== 'string') {
-        res.status(400).json({ error: 'Missing or invalid collection schema name' });
-        return;
-    }
-    try {
-        if (!fs.existsSync(resolve(config.SCHEMAS_PATH, `collections/${name}.json`))) {
-            res.status(400).json({ error: 'No collection schema exists with this name' });
-            return;
-        }
-        await fsp.unlink(resolve(config.SCHEMAS_PATH, `collections/${name}.json`));
-        await Collection.destroy({ where: { schema: name } });
-    }
-    catch (e) {
-        res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
-        return;
-    }
-    res.status(200).json({ success: 'Deleted collection schema successfully' });
-};
-const internalCollectionsSchemaController = { getAll, get: get$4, post: post$1, patch: patch$1, delete: _delete };
-
-const internalSchemasRouter = Router();
-internalSchemasRouter.get('/singles', internalSinglesSchemaController.getAll);
-internalSchemasRouter.get('/singles/:name', internalSinglesSchemaController.get);
-internalSchemasRouter.post('/singles', internalSinglesSchemaController.post);
-internalSchemasRouter.patch('/singles/:name', internalSinglesSchemaController.patch);
-internalSchemasRouter.delete('/singles/:name', internalSinglesSchemaController.delete);
-internalSchemasRouter.get('/collections', internalCollectionsSchemaController.getAll);
-internalSchemasRouter.get('/collections/:name', internalCollectionsSchemaController.get);
-internalSchemasRouter.post('/collections', internalCollectionsSchemaController.post);
-internalSchemasRouter.patch('/collections/:name', internalCollectionsSchemaController.patch);
-internalSchemasRouter.delete('/collections/:name', internalCollectionsSchemaController.delete);
-
-const get$3 = async (req, res) => {
-    const { name } = req.params;
-    if (typeof name !== 'string') {
-        res.status(400).json({ error: 'Missing or invalid single name' });
-        return;
-    }
-    let item;
-    try {
-        const rawSingle = await Single.findOne({ where: { schema: name } });
-        if (!rawSingle) {
-            res.status(404).json({ error: 'No content exists for this single' });
-            return;
-        }
-        item = {
-            id: rawSingle.id,
-            schema: rawSingle.schema,
-            properties: JSON.parse(rawSingle.properties)
-        };
-    }
-    catch (e) {
-        res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
-        return;
-    }
-    res.status(200).json(item);
-};
-const post = async (req, res) => {
-    const { name } = req.params;
-    if (typeof name !== 'string') {
-        res.status(400).json({ error: 'Missing or invalid single name' });
-        return;
-    }
-    //TODO: ensure content-type is json, and correct structure
-    const properties = req.body;
-    if (typeof properties !== 'object' ||
-        properties === null ||
-        Array.isArray(properties)) {
-        res.status(400).json({ error: 'Invalid single structure' });
-        return;
-    }
-    try {
-        await Single.create({
-            schema: name,
-            properties: JSON.stringify(properties)
-        });
-    }
-    catch (e) {
-        res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
-        return;
-    }
-    res.status(200).json({ success: 'Created single successfully' });
-};
-const patch = async (req, res) => {
-    const { name } = req.params;
-    if (typeof name !== 'string') {
-        res.status(400).json({ error: 'Missing or invalid single name' });
-        return;
-    }
-    //TODO: ensure content-type is json, and correct structure
-    const properties = req.body;
-    if (typeof properties !== 'object' ||
-        properties === null ||
-        Array.isArray(properties)) {
-        res.status(400).json({ error: 'Invalid single structure' });
-        return;
-    }
-    try {
-        if (!await Single.findOne({ where: { schema: name } })) {
-            res.status(404).json({ error: 'No content exists for this single' });
-            return;
-        }
-        await Single.update({
-            properties: JSON.stringify(properties)
-        }, { where: { schema: name } });
-    }
-    catch (e) {
-        res.status(500).json({ error: 'Internal server error' });
-        void logError(e);
-        return;
-    }
-    res.status(200).json({ success: 'Updated single successfully' });
-};
-const internalSinglesController = { get: get$3, post, patch };
-
-const get$2 = async (req, res) => {
+const get$6 = async (req, res) => {
     const { name } = req.params;
     if (typeof name !== 'string') {
         res.status(400).json({ error: 'Missing or invalid collection name' });
@@ -581,7 +237,7 @@ const get$2 = async (req, res) => {
     let items;
     try {
         items = (await Collection.findAll({ where: { schema: name } }))
-            .map(item => ({
+            .map((item) => ({
             id: item.id,
             schema: item.schema,
             properties: JSON.parse(item.properties)
@@ -605,7 +261,7 @@ const getItem$1 = async (req, res) => {
         return;
     }
     const id = parseInt(rawId);
-    if (!Number.isInteger(id)) { //includes NaN check
+    if (!Number.isInteger(id)) { // includes NaN check
         res.status(400).json({ error: 'Invalid collection item ID' });
         return;
     }
@@ -635,11 +291,11 @@ const postItem = async (req, res) => {
         res.status(400).json({ error: 'Missing or invalid collection name' });
         return;
     }
-    //TODO: ensure content-type is json, and correct structure
+    // TODO: ensure content-type is json, and correct structure
     const properties = req.body;
-    if (typeof properties !== 'object' ||
-        properties === null ||
-        Array.isArray(properties)) {
+    if (typeof properties !== 'object'
+        || properties === null
+        || Array.isArray(properties)) {
         res.status(400).json({ error: 'Invalid collection item structure' });
         return;
     }
@@ -671,15 +327,15 @@ const patchItem = async (req, res) => {
         return;
     }
     const id = parseInt(rawId);
-    if (!Number.isInteger(id)) { //includes NaN check
+    if (!Number.isInteger(id)) { // includes NaN check
         res.status(400).json({ error: 'Invalid collection item ID' });
         return;
     }
-    //TODO: ensure content-type is json, and correct structure
+    // TODO: ensure content-type is json, and correct structure
     const properties = req.body;
-    if (typeof properties !== 'object' ||
-        properties === null ||
-        Array.isArray(properties)) {
+    if (typeof properties !== 'object'
+        || properties === null
+        || Array.isArray(properties)) {
         res.status(400).json({ error: 'Invalid collection item structure' });
         return;
     }
@@ -710,7 +366,7 @@ const deleteItem = async (req, res) => {
         return;
     }
     const id = parseInt(rawId);
-    if (!Number.isInteger(id)) { //includes NaN check
+    if (!Number.isInteger(id)) { // includes NaN check
         res.status(400).json({ error: 'Invalid collection item ID' });
         return;
     }
@@ -728,7 +384,92 @@ const deleteItem = async (req, res) => {
     }
     res.status(200).json({ success: 'Deleted collection item successfully' });
 };
-const internalCollectionsController = { get: get$2, getItem: getItem$1, postItem, patchItem, deleteItem };
+const internalCollectionsController = { get: get$6, getItem: getItem$1, postItem, patchItem, deleteItem };
+
+const get$5 = async (req, res) => {
+    const { name } = req.params;
+    if (typeof name !== 'string') {
+        res.status(400).json({ error: 'Missing or invalid single name' });
+        return;
+    }
+    let item;
+    try {
+        const rawSingle = await Single.findOne({ where: { schema: name } });
+        if (!rawSingle) {
+            res.status(404).json({ error: 'No content exists for this single' });
+            return;
+        }
+        item = {
+            id: rawSingle.id,
+            schema: rawSingle.schema,
+            properties: JSON.parse(rawSingle.properties)
+        };
+    }
+    catch (e) {
+        res.status(500).json({ error: 'Internal server error' });
+        void logError(e);
+        return;
+    }
+    res.status(200).json(item);
+};
+const post$2 = async (req, res) => {
+    const { name } = req.params;
+    if (typeof name !== 'string') {
+        res.status(400).json({ error: 'Missing or invalid single name' });
+        return;
+    }
+    // TODO: ensure content-type is json, and correct structure
+    const properties = req.body;
+    if (typeof properties !== 'object'
+        || properties === null
+        || Array.isArray(properties)) {
+        res.status(400).json({ error: 'Invalid single structure' });
+        return;
+    }
+    try {
+        await Single.create({
+            schema: name,
+            properties: JSON.stringify(properties)
+        });
+    }
+    catch (e) {
+        res.status(500).json({ error: 'Internal server error' });
+        void logError(e);
+        return;
+    }
+    res.status(200).json({ success: 'Created single successfully' });
+};
+const patch$2 = async (req, res) => {
+    const { name } = req.params;
+    if (typeof name !== 'string') {
+        res.status(400).json({ error: 'Missing or invalid single name' });
+        return;
+    }
+    // TODO: ensure content-type is json, and correct structure
+    const properties = req.body;
+    if (typeof properties !== 'object'
+        || properties === null
+        || Array.isArray(properties)) {
+        res.status(400).json({ error: 'Invalid single structure' });
+        return;
+    }
+    try {
+        if (!await Single.findOne({ where: { schema: name } })) {
+            res.status(404).json({ error: 'No content exists for this single' });
+            return;
+        }
+        await Single.update({
+            properties: JSON.stringify(properties)
+        }, { where: { schema: name } });
+    }
+    catch (e) {
+        res.status(500).json({ error: 'Internal server error' });
+        void logError(e);
+        return;
+    }
+    res.status(200).json({ success: 'Updated single successfully' });
+};
+const internalSinglesController = { get: get$5, post: post$2, patch: patch$2 };
 
 const internalContentRouter = Router();
 internalContentRouter.get('/singles/:name', internalSinglesController.get);
@@ -740,35 +481,281 @@ internalContentRouter.post('/collections/:name', internalCollectionsController.p
 internalContentRouter.patch('/collections/:name/:id', internalCollectionsController.patchItem);
 internalContentRouter.delete('/collections/:name/:id', internalCollectionsController.deleteItem);
 
-const internalApiRouter = Router();
-internalApiRouter.use('/schemas', internalSchemasRouter);
-internalApiRouter.use('/content', internalContentRouter);
-
-const get$1 = async (req, res) => {
-    const { name } = req.params;
-    if (typeof name !== 'string') {
-        res.status(400).json({ error: 'Missing or invalid single name' });
+const getAll$1 = async (_req, res) => {
+    let schemas;
+    try {
+        const fileNames = await fsp.readdir(resolve(config.SCHEMAS_PATH, 'collections'));
+        schemas = await Promise.all(fileNames.map(async (fileName) => JSON.parse(await fsp.readFile(resolve(config.SCHEMAS_PATH, `collections/${fileName}`), 'utf-8'))));
+    }
+    catch (e) {
+        res.status(404).json({ error: 'No collection schema exists with this name' });
         return;
     }
-    let itemProperties;
+    res.status(200).json(schemas);
+};
+const get$4 = async (req, res) => {
+    const { name } = req.params;
+    if (typeof name !== 'string') {
+        res.status(400).json({ error: 'Missing collection schema name' });
+        return;
+    }
+    let schema;
     try {
-        const rawSingle = await Single.findOne({ where: { schema: name } });
-        if (!rawSingle) {
-            res.status(404).json({ error: 'No single exists with this name' });
+        schema = JSON.parse(await fsp.readFile(resolve(config.SCHEMAS_PATH, `collections/${name}.json`), 'utf-8'));
+    }
+    catch (e) {
+        res.status(404).json({ error: 'No collection schema exists with this name' });
+        return;
+    }
+    res.status(200).json(schema);
+};
+const post$1 = async (req, res) => {
+    // TODO: ensure content-type is json, and correct structure
+    const schema = req.body;
+    if (typeof schema !== 'object'
+        || schema === null
+        || Array.isArray(schema)
+        || !('name' in schema)
+        || typeof schema.name !== 'string'
+        || schema.name === 'create'
+        || !('plural_display_name' in schema)
+        || typeof schema.plural_display_name !== 'string'
+        || !('singular_display_name' in schema)
+        || typeof schema.singular_display_name !== 'string'
+        || !('properties' in schema)
+        || typeof schema.properties !== 'object'
+        || schema.properties === null
+        || Array.isArray(schema.properties)) {
+        res.status(400).json({ error: 'Invalid collection schema structure' });
+        return;
+    }
+    try {
+        if (fs.existsSync(resolve(config.SCHEMAS_PATH, `collections/${schema.name}.json`))) {
+            res.status(400).json({ error: 'A collection schema already exists with this name' });
             return;
         }
-        itemProperties = JSON.parse(rawSingle.properties);
+        await fsp.writeFile(resolve(config.SCHEMAS_PATH, `collections/${schema.name}.json`), JSON.stringify(schema, undefined, '  '), 'utf-8');
     }
     catch (e) {
         res.status(500).json({ error: 'Internal server error' });
         void logError(e);
         return;
     }
-    res.status(200).json(itemProperties);
+    res.status(200).json({
+        success: 'Created collection schema successfully',
+        created_schema_name: schema.name
+    });
 };
-const publicSinglesController = { get: get$1 };
+const patch$1 = async (req, res) => {
+    const { name } = req.params;
+    if (typeof name !== 'string') {
+        res.status(400).json({ error: 'Missing or invalid collection schema name' });
+        return;
+    }
+    // TODO: ensure content-type is json, and correct structure
+    const schema = req.body;
+    if (typeof schema !== 'object'
+        || schema === null
+        || Array.isArray(schema)
+        || !('name' in schema)
+        || typeof schema.name !== 'string'
+        || schema.name === 'create'
+        || !('plural_display_name' in schema)
+        || typeof schema.plural_display_name !== 'string'
+        || !('singular_display_name' in schema)
+        || typeof schema.singular_display_name !== 'string'
+        || !('properties' in schema)
+        || typeof schema.properties !== 'object'
+        || schema.properties === null
+        || Array.isArray(schema.properties)) {
+        res.status(400).json({ error: 'Invalid collection schema structure' });
+        return;
+    }
+    try {
+        if (!fs.existsSync(resolve(config.SCHEMAS_PATH, `collections/${name}.json`))) {
+            res.status(400).json({ error: 'No collection schema exists with this name' });
+            return;
+        }
+        await fsp.writeFile(resolve(config.SCHEMAS_PATH, `collections/${name}.json`), JSON.stringify(schema, undefined, '  '), 'utf-8');
+    }
+    catch (e) {
+        res.status(500).json({ error: 'Internal server error' });
+        void logError(e);
+        return;
+    }
+    res.status(200).json({ success: 'Updated collection schema successfully' });
+};
+const _delete$1 = async (req, res) => {
+    const { name } = req.params;
+    if (typeof name !== 'string') {
+        res.status(400).json({ error: 'Missing or invalid collection schema name' });
+        return;
+    }
+    try {
+        if (!fs.existsSync(resolve(config.SCHEMAS_PATH, `collections/${name}.json`))) {
+            res.status(400).json({ error: 'No collection schema exists with this name' });
+            return;
+        }
+        await fsp.unlink(resolve(config.SCHEMAS_PATH, `collections/${name}.json`));
+        await Collection.destroy({ where: { schema: name } });
+    }
+    catch (e) {
+        res.status(500).json({ error: 'Internal server error' });
+        void logError(e);
+        return;
+    }
+    res.status(200).json({ success: 'Deleted collection schema successfully' });
+};
+const internalCollectionsSchemaController = { getAll: getAll$1, get: get$4, post: post$1, patch: patch$1, delete: _delete$1 };
 
-const get = async (req, res) => {
+const getAll = async (_req, res) => {
+    let schemas;
+    try {
+        const fileNames = await fsp.readdir(resolve(config.SCHEMAS_PATH, 'singles'));
+        schemas = await Promise.all(fileNames.map(async (fileName) => JSON.parse(await fsp.readFile(resolve(config.SCHEMAS_PATH, `singles/${fileName}`), 'utf-8'))));
+    }
+    catch (e) {
+        res.status(404).json({ error: 'No single schema exists with this name' });
+        return;
+    }
+    res.status(200).json(schemas);
+};
+const get$3 = async (req, res) => {
+    const { name } = req.params;
+    if (typeof name !== 'string') {
+        res.status(400).json({ error: 'Missing single schema name' });
+        return;
+    }
+    let schema;
+    try {
+        schema = JSON.parse(await fsp.readFile(resolve(config.SCHEMAS_PATH, `singles/${name}.json`), 'utf-8'));
+    }
+    catch (e) {
+        res.status(404).json({ error: 'No single schema exists with this name' });
+        return;
+    }
+    res.status(200).json(schema);
+};
+const post = async (req, res) => {
+    // TODO: ensure content-type is json, and correct structure
+    const schema = req.body;
+    if (typeof schema !== 'object'
+        || schema === null
+        || Array.isArray(schema)
+        || !('name' in schema)
+        || typeof schema.name !== 'string'
+        || schema.name === 'create'
+        || !('display_name' in schema)
+        || typeof schema.display_name !== 'string'
+        || !('properties' in schema)
+        || typeof schema.properties !== 'object'
+        || schema.properties === null
+        || Array.isArray(schema.properties)) {
+        res.status(400).json({ error: 'Invalid single schema structure' });
+        return;
+    }
+    try {
+        if (fs.existsSync(resolve(config.SCHEMAS_PATH, `singles/${schema.name}.json`))) {
+            res.status(400).json({ error: 'A single schema already exists with this name' });
+            return;
+        }
+        await fsp.writeFile(resolve(config.SCHEMAS_PATH, `singles/${schema.name}.json`), JSON.stringify(schema, undefined, '  '), 'utf-8');
+    }
+    catch (e) {
+        res.status(500).json({ error: 'Internal server error' });
+        void logError(e);
+        return;
+    }
+    res.status(200).json({
+        success: 'Created single schema successfully',
+        created_schema_name: schema.name
+    });
+};
+const patch = async (req, res) => {
+    const { name } = req.params;
+    if (typeof name !== 'string') {
+        res.status(400).json({ error: 'Missing or invalid single schema name' });
+        return;
+    }
+    // TODO: ensure content-type is json, and correct structure
+    const schema = req.body;
+    if (typeof schema !== 'object'
+        || schema === null
+        || Array.isArray(schema)
+        || !('name' in schema)
+        || typeof schema.name !== 'string'
+        || schema.name === 'create'
+        || !('display_name' in schema)
+        || typeof schema.display_name !== 'string'
+        || !('properties' in schema)
+        || typeof schema.properties !== 'object'
+        || schema.properties === null
+        || Array.isArray(schema.properties)) {
+        res.status(400).json({ error: 'Invalid single schema structure' });
+        return;
+    }
+    try {
+        if (!fs.existsSync(resolve(config.SCHEMAS_PATH, `singles/${name}.json`))) {
+            res.status(400).json({ error: 'No single schema exists with this name' });
+            return;
+        }
+        await fsp.writeFile(resolve(config.SCHEMAS_PATH, `singles/${name}.json`), JSON.stringify(schema, undefined, '  '), 'utf-8');
+    }
+    catch (e) {
+        res.status(500).json({ error: 'Internal server error' });
+        void logError(e);
+        return;
+    }
+    res.status(200).json({ success: 'Updated single schema successfully' });
+};
+const _delete = async (req, res) => {
+    const { name } = req.params;
+    if (typeof name !== 'string') {
+        res.status(400).json({ error: 'Missing or invalid single schema name' });
+        return;
+    }
+    try {
+        if (!fs.existsSync(resolve(config.SCHEMAS_PATH, `singles/${name}.json`))) {
+            res.status(400).json({ error: 'No single schema exists with this name' });
+            return;
+        }
+        await fsp.unlink(resolve(config.SCHEMAS_PATH, `singles/${name}.json`));
+        await Single.destroy({ where: { schema: name } });
+    }
+    catch (e) {
+        res.status(500).json({ error: 'Internal server error' });
+        void logError(e);
+        return;
+    }
+    res.status(200).json({ success: 'Deleted single schema successfully' });
+};
+const internalSinglesSchemaController = { getAll, get: get$3, post, patch, delete: _delete };
+
+const internalSchemasRouter = Router();
+internalSchemasRouter.get('/singles', internalSinglesSchemaController.getAll);
+internalSchemasRouter.get('/singles/:name', internalSinglesSchemaController.get);
+internalSchemasRouter.post('/singles', internalSinglesSchemaController.post);
+internalSchemasRouter.patch('/singles/:name', internalSinglesSchemaController.patch);
+internalSchemasRouter.delete('/singles/:name', internalSinglesSchemaController.delete);
+internalSchemasRouter.get('/collections', internalCollectionsSchemaController.getAll);
+internalSchemasRouter.get('/collections/:name', internalCollectionsSchemaController.get);
+internalSchemasRouter.post('/collections', internalCollectionsSchemaController.post);
+internalSchemasRouter.patch('/collections/:name', internalCollectionsSchemaController.patch);
+internalSchemasRouter.delete('/collections/:name', internalCollectionsSchemaController.delete);
+
+const internalApiRouter = Router();
+internalApiRouter.use('/schemas', internalSchemasRouter);
+internalApiRouter.use('/content', internalContentRouter);
+
+const get$2 = (_req, res) => {
+    res.sendFile(resolve(config.UI_ASSETS_PATH, 'index.html'));
+};
+const vueAppController = { get: get$2 };
+
+const pagesRouter = Router();
+pagesRouter.get('*', vueAppController.get);
+
+const get$1 = async (req, res) => {
     const { name } = req.params;
     if (typeof name !== 'string') {
         res.status(400).json({ error: 'Missing or invalid collection name' });
@@ -777,8 +764,8 @@ const get = async (req, res) => {
     let itemsProperties;
     try {
         itemsProperties = (await Collection.findAll({ where: { schema: name } }))
-            .map(item => ({
-            id: item.id, //TODO: reconsider slapping id with properties?
+            .map((item) => ({
+            id: item.id, // TODO: reconsider slapping id with properties?
             ...JSON.parse(item.properties)
         }));
     }
@@ -800,7 +787,7 @@ const getItem = async (req, res) => {
         return;
     }
     const id = parseInt(rawId);
-    if (!Number.isInteger(id)) { //includes NaN check
+    if (!Number.isInteger(id)) { // includes NaN check
         res.status(400).json({ error: 'Invalid collection item ID' });
         return;
     }
@@ -812,7 +799,7 @@ const getItem = async (req, res) => {
             return;
         }
         itemProperties = {
-            id: rawItem.id, //TODO: reconsider slapping id with properties?
+            id: rawItem.id, // TODO: reconsider slapping id with properties?
             ...JSON.parse(rawItem.properties)
         };
     }
@@ -823,7 +810,31 @@ const getItem = async (req, res) => {
     }
     res.status(200).json(itemProperties);
 };
-const publicCollectionsController = { get, getItem };
+const publicCollectionsController = { get: get$1, getItem };
+
+const get = async (req, res) => {
+    const { name } = req.params;
+    if (typeof name !== 'string') {
+        res.status(400).json({ error: 'Missing or invalid single name' });
+        return;
+    }
+    let itemProperties;
+    try {
+        const rawSingle = await Single.findOne({ where: { schema: name } });
+        if (!rawSingle) {
+            res.status(404).json({ error: 'No single exists with this name' });
+            return;
+        }
+        itemProperties = JSON.parse(rawSingle.properties);
+    }
+    catch (e) {
+        res.status(500).json({ error: 'Internal server error' });
+        void logError(e);
+        return;
+    }
+    res.status(200).json(itemProperties);
+};
+const publicSinglesController = { get };
 
 const publicApiRouter = Router();
 publicApiRouter.get(['/single/:name', '/s/:name', '/:name'], publicSinglesController.get);
@@ -842,7 +853,7 @@ void log('Checking schema directories'.gray);
 await initSchemaDirs();
 // init database
 await initDatabase(data);
-//create app, init middlewares
+// create app, init middlewares
 void log('Creating application'.gray);
 const app = express();
 app.use(cors());
@@ -850,7 +861,7 @@ app.use(json());
 app.use(urlencoded({ extended: true }));
 app.use(compression());
 app.use(_static(config.UI_ASSETS_PATH, { index: false }));
-app.use(cookieParser(config.COOKIE_SECRET ?? undefined));
+app.use(cookieParser(config.COOKIE_SECRET));
 app.use(router);
 // create http server
 void log('Creating server'.gray + '\n');

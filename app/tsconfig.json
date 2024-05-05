@@ -34,7 +34,8 @@
       "~scss/*": [
         "./src/lib/scss/*"
       ]
-    }
+    },
+    "incremental": true
   },
   "include": [
     "**/*.ts",

@@ -5,5 +5,5 @@
  */
 export const createClass = (...classNames: (string | null | undefined)[]): string =>
 	classNames
-		.filter(cls => typeof cls === 'string')
+		.filter((cls) => typeof cls === 'string')
 		.join(' ');

@@ -1,10 +1,12 @@
 import type { Metadata, NextPage } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import Image from 'next/image';
-import styles from './Users.module.scss';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+
 import { unify } from '~/lib/server/services';
 import { cutString, md } from '~/lib/utils';
+
+import styles from './Users.module.scss';
 
 export const generateMetadata = async (): Promise<Metadata> => {
 	const page = await unify.getUsersPage()
@@ -35,7 +37,7 @@ const UsersPage: NextPage = async () => {
 			</section>
 			<section className='container'>
 				<ul className={styles.users}>
-					{users.map(user => (
+					{users.map((user) => (
 						<Link
 							key={user.username}
 							className={styles.user}
@@ -64,23 +66,24 @@ const UsersPage: NextPage = async () => {
 							/>
 
 							<p className={styles.isCool}>
-								{user.is_cool
-									? (
-										<>
-											User is cool!
-										</>
-									)
-									: (
-										<>
-											User is
-											{' '}
-											<b>
-												not
-											</b>
-											{' '}
-											cool!
-										</>
-									)
+								{
+									user.is_cool
+										? (
+											<>
+												User is cool!
+											</>
+										)
+										: (
+											<>
+												User is
+												{' '}
+												<b>
+													not
+												</b>
+												{' '}
+												cool!
+											</>
+										)
 								}
 							</p>
 						</Link>

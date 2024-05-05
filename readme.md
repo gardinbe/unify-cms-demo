@@ -4,11 +4,11 @@ This application is a demonstration of how the Unify CMS API's can be interacted
 
 ## Installation
 
-1. Ensure you're got and are using atleast Node 20.11. If you haven't:
-	1. Install (NVM)[https://github.com/coreybutler/nvm-windows]
-	2. Open a new terminal/powershell
-	3. Run `nvm install 20.11`
-	4. Run `nvm use 20.11`
+1. Ensure you've got and are using atleast Node 20.11. If you haven't:
+   1. Install (NVM)[https://github.com/coreybutler/nvm-windows]
+   2. Open a new terminal/powershell
+   3. Run `nvm install 20.11`
+   4. Run `nvm use 20.11`
 2. Install yarn: `npm i -g yarn`
 3. Navigate to the root of the project
 4. Install all dependencies: `yarn install`
@@ -26,4 +26,4 @@ To do this:
 
 You'll then be able to access the CMS at http://localhost:1234, and the app at http://localhost:3000.
 
-*The reason for not using Docker is because it appears to be a massive pain to spin up one container after another has already started using docker-compose.*
+_The reason for not using Docker is because it appears to be a massive pain to spin up one container after another has already started using docker-compose._

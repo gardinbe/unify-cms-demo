@@ -1,4 +1,4 @@
-/* eslint-disable tsdoc/syntax */
+/* eslint @stylistic/indent: ['error', 2] */
 
 import { resolve } from 'path';
 

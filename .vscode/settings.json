@@ -1,3 +1,23 @@
 {
-	"typescript.tsdk": "node_modules\\typescript\\lib"
+	//
+	// global cfg
+	//
+	"typescript.tsdk": "node_modules\\typescript\\lib",
+	//
+	// prettier-eslint config
+	//
+	"eslint.experimental.useFlatConfig": true,
+	"editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
+	"editor.formatOnType": false,
+	"editor.formatOnSaveMode": "file",
+	//
+	// files
+	//
+	"[javascript][typescript][typescriptreact]": {
+		"editor.defaultFormatter": "vscode.typescript-language-features"
+	},
+	"[json][json5][jsonc][prettierrc][eslintrc]": {
+		"editor.defaultFormatter": "vscode.json-language-features",
+		"editor.tabSize": 2
+	}
 }

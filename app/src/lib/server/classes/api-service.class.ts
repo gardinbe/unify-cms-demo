@@ -1,6 +1,6 @@
 import { stringify } from 'qs';
-import type { DeepRequired } from 'ts-essentials';
 import { mergeDeepRight } from 'ramda';
+import type { DeepRequired } from 'ts-essentials';
 
 export interface ExtendedRequestOptions<
 	TRequestParams extends object = object
@@ -256,7 +256,7 @@ export class ApiService<
 
 		const url = `${this.options.hostname}${this.options.basePath ?? ''}/${endpoint}${encodedParams ? `?${encodedParams}` : ''}`;
 
-		//TODO: allow request cancellation here
+		// TODO: allow request cancellation here
 		const response = await fetch(url, options);
 
 		const data = await response.json() as TResponseData;
