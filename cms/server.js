@@ -291,7 +291,7 @@ const postItem = async (req, res) => {
         res.status(400).json({ error: 'Missing or invalid collection name' });
         return;
     }
-    // TODO: ensure content-type is json, and correct structure
+    // TODO: ensure content-type is json
     const properties = req.body;
     if (typeof properties !== 'object'
         || properties === null
@@ -331,7 +331,7 @@ const patchItem = async (req, res) => {
         res.status(400).json({ error: 'Invalid collection item ID' });
         return;
     }
-    // TODO: ensure content-type is json, and correct structure
+    // TODO: ensure content-type is json
     const properties = req.body;
     if (typeof properties !== 'object'
         || properties === null
@@ -418,7 +418,7 @@ const post$2 = async (req, res) => {
         res.status(400).json({ error: 'Missing or invalid single name' });
         return;
     }
-    // TODO: ensure content-type is json, and correct structure
+    // TODO: ensure content-type is json
     const properties = req.body;
     if (typeof properties !== 'object'
         || properties === null
@@ -445,7 +445,7 @@ const patch$2 = async (req, res) => {
         res.status(400).json({ error: 'Missing or invalid single name' });
         return;
     }
-    // TODO: ensure content-type is json, and correct structure
+    // TODO: ensure content-type is json
     const properties = req.body;
     if (typeof properties !== 'object'
         || properties === null
@@ -510,22 +510,9 @@ const get$4 = async (req, res) => {
     res.status(200).json(schema);
 };
 const post$1 = async (req, res) => {
-    // TODO: ensure content-type is json, and correct structure
+    // TODO: ensure content-type is json
     const schema = req.body;
-    if (typeof schema !== 'object'
-        || schema === null
-        || Array.isArray(schema)
-        || !('name' in schema)
-        || typeof schema.name !== 'string'
-        || schema.name === 'create'
-        || !('plural_display_name' in schema)
-        || typeof schema.plural_display_name !== 'string'
-        || !('singular_display_name' in schema)
-        || typeof schema.singular_display_name !== 'string'
-        || !('properties' in schema)
-        || typeof schema.properties !== 'object'
-        || schema.properties === null
-        || Array.isArray(schema.properties)) {
+    if (!validCollectionSchema(schema)) {
         res.status(400).json({ error: 'Invalid collection schema structure' });
         return;
     }
@@ -552,22 +539,9 @@ const patch$1 = async (req, res) => {
         res.status(400).json({ error: 'Missing or invalid collection schema name' });
         return;
     }
-    // TODO: ensure content-type is json, and correct structure
+    // TODO: ensure content-type is json
     const schema = req.body;
-    if (typeof schema !== 'object'
-        || schema === null
-        || Array.isArray(schema)
-        || !('name' in schema)
-        || typeof schema.name !== 'string'
-        || schema.name === 'create'
-        || !('plural_display_name' in schema)
-        || typeof schema.plural_display_name !== 'string'
-        || !('singular_display_name' in schema)
-        || typeof schema.singular_display_name !== 'string'
-        || !('properties' in schema)
-        || typeof schema.properties !== 'object'
-        || schema.properties === null
-        || Array.isArray(schema.properties)) {
+    if (!validCollectionSchema(schema)) {
         res.status(400).json({ error: 'Invalid collection schema structure' });
         return;
     }
@@ -607,6 +581,27 @@ const _delete$1 = async (req, res) => {
     res.status(200).json({ success: 'Deleted collection schema successfully' });
 };
 const internalCollectionsSchemaController = { getAll: getAll$1, get: get$4, post: post$1, patch: patch$1, delete: _delete$1 };
+/**
+ * Checks if the provided object is a valid collection schema.
+ * @param schema - Schema to check
+ * @returns Validity
+ */
+const validCollectionSchema = (schema) => typeof schema === 'object'
+    && schema !== null
+    && !Array.isArray(schema)
+    && 'name' in schema
+    && typeof schema.name === 'string'
+    && schema.name !== 'create'
+    && 'plural_display_name' in schema
+    && typeof schema.plural_display_name === 'string'
+    && 'singular_display_name' in schema
+    && typeof schema.singular_display_name === 'string'
+    && 'item_display_property' in schema
+    && typeof schema.item_display_property === 'string'
+    && 'properties' in schema
+    && typeof schema.properties === 'object'
+    && schema.properties !== null
+    && !Array.isArray(schema.properties);
 
 const getAll = async (_req, res) => {
     let schemas;
@@ -637,20 +632,9 @@ const get$3 = async (req, res) => {
     res.status(200).json(schema);
 };
 const post = async (req, res) => {
-    // TODO: ensure content-type is json, and correct structure
+    // TODO: ensure content-type is json
     const schema = req.body;
-    if (typeof schema !== 'object'
-        || schema === null
-        || Array.isArray(schema)
-        || !('name' in schema)
-        || typeof schema.name !== 'string'
-        || schema.name === 'create'
-        || !('display_name' in schema)
-        || typeof schema.display_name !== 'string'
-        || !('properties' in schema)
-        || typeof schema.properties !== 'object'
-        || schema.properties === null
-        || Array.isArray(schema.properties)) {
+    if (!validSingleSchema(schema)) {
         res.status(400).json({ error: 'Invalid single schema structure' });
         return;
     }
@@ -677,20 +661,9 @@ const patch = async (req, res) => {
         res.status(400).json({ error: 'Missing or invalid single schema name' });
         return;
     }
-    // TODO: ensure content-type is json, and correct structure
+    // TODO: ensure content-type is json
     const schema = req.body;
-    if (typeof schema !== 'object'
-        || schema === null
-        || Array.isArray(schema)
-        || !('name' in schema)
-        || typeof schema.name !== 'string'
-        || schema.name === 'create'
-        || !('display_name' in schema)
-        || typeof schema.display_name !== 'string'
-        || !('properties' in schema)
-        || typeof schema.properties !== 'object'
-        || schema.properties === null
-        || Array.isArray(schema.properties)) {
+    if (!validSingleSchema(schema)) {
         res.status(400).json({ error: 'Invalid single schema structure' });
         return;
     }
@@ -730,6 +703,23 @@ const _delete = async (req, res) => {
     res.status(200).json({ success: 'Deleted single schema successfully' });
 };
 const internalSinglesSchemaController = { getAll, get: get$3, post, patch, delete: _delete };
+/**
+ * Checks if the provided object is a valid single schema.
+ * @param schema - Schema to check
+ * @returns Validity
+ */
+const validSingleSchema = (schema) => typeof schema === 'object'
+    && schema !== null
+    && !Array.isArray(schema)
+    && 'name' in schema
+    && typeof schema.name === 'string'
+    && schema.name !== 'create'
+    && 'display_name' in schema
+    && typeof schema.display_name === 'string'
+    && 'properties' in schema
+    && typeof schema.properties === 'object'
+    && schema.properties !== null
+    && !Array.isArray(schema.properties);
 
 const internalSchemasRouter = Router();
 internalSchemasRouter.get('/singles', internalSinglesSchemaController.getAll);
