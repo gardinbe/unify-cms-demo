@@ -257,7 +257,7 @@ export class ApiService<
 		const url = `${this.options.hostname}${this.options.basePath ?? ''}/${endpoint}${encodedParams ? `?${encodedParams}` : ''}`;
 
 		// TODO: allow request cancellation here
-		const response = await fetch(url, options);
+		const response = await fetch(url, { ...options, next: { revalidate: 0 } }); // always revalidate for demo purposes
 
 		const data = await response.json() as TResponseData;
 
